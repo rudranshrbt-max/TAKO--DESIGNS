@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tako Designs — Admin</title>
+<meta name="robots" content="noindex, nofollow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#D4AF37;--gold-light:#E8CC6A;--gold-dim:#A8871D;
+  --gold-glow:rgba(212,175,55,0.12);--gold-border:rgba(212,175,55,0.22);
+  --bg:#080808;--bg-2:#101010;--bg-3:#181818;--bg-4:#1f1f1f;
+  --white:#FFFFFF;--w80:rgba(255,255,255,0.82);--w50:rgba(255,255,255,0.50);
+  --w20:rgba(255,255,255,0.20);--w08:rgba(255,255,255,0.06);
+  --green:#5fd97a;--red:#ff6b6b;--blue:#6bb8ff;
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+body{
+  font-family:'Inter',sans-serif;background:var(--bg);color:var(--white);
+  line-height:1.5;min-height:100vh;
+}
+.serif{font-family:'Cormorant Garamond',serif}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+
+/* ===== LOGIN SCREEN ===== */
+#login-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:24px;
+}
+.login-box{
+  width:100%;max-width:380px;background:var(--bg-2);
+  border:1px solid var(--gold-border);border-radius:16px;
+  padding:44px 36px;text-align:center;
+  box-shadow:0 30px 90px rgba(0,0,0,0.5);
+}
+.login-logo{font-size:1.6rem;color:var(--gold);margin-bottom:6px;letter-spacing:0.04em}
+.login-logo span{color:var(--white)}
+.login-sub{font-size:0.78rem;color:var(--w50);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:32px}
+.login-box input{
+  width:100%;background:var(--bg-3);border:1px solid var(--w08);
+  border-radius:8px;padding:13px 16px;color:var(--white);font-size:0.9rem;
+  margin-bottom:12px;transition:border-color 0.2s;
+}
+.login-box input:focus{outline:none;border-color:var(--gold-border)}
+.login-box button{
+  width:100%;background:var(--gold);color:var(--bg);border:none;
+  padding:14px;border-radius:8px;font-weight:600;font-size:0.9rem;
+  cursor:pointer;transition:all 0.2s;margin-top:6px;
+}
+.login-box button:hover{background:var(--gold-light)}
+.login-box button:disabled{opacity:0.55;cursor:not-allowed}
+.login-msg{font-size:0.8rem;color:var(--red);margin-top:14px;min-height:1.2em}
+
+/* ===== APP SHELL ===== */
+#app-shell{display:none;min-height:100vh}
+#app-shell.active{display:block}
+header.admin-head{
+  border-bottom:1px solid var(--w08);padding:18px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:rgba(8,8,8,0.92);backdrop-filter:blur(10px);
+  z-index:50;
+}
+.admin-logo{font-size:1.15rem;color:var(--gold);letter-spacing:0.03em}
+.admin-logo span{color:var(--white);font-weight:300}
+.head-right{display:flex;align-items:center;gap:18px}
+.head-email{font-size:0.78rem;color:var(--w50)}
+#logout-btn{
+  background:transparent;border:1px solid var(--w08);color:var(--w50);
+  padding:8px 16px;border-radius:7px;font-size:0.78rem;cursor:pointer;
+  transition:all 0.2s;
+}
+#logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+.tabs{
+  display:flex;gap:4px;padding:0 28px;border-bottom:1px solid var(--w08);
+  overflow-x:auto;
+}
+.tab-btn{
+  background:transparent;border:none;color:var(--w50);
+  padding:16px 18px;font-size:0.84rem;font-weight:500;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;
+}
+.tab-btn:hover{color:var(--w80)}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+main{padding:28px;max-width:1280px;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block}
+
+.panel-top{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:22px;flex-wrap:wrap;gap:14px;
+}
+.panel-title{font-size:1.4rem;font-family:'Cormorant Garamond',serif;color:var(--white)}
+.panel-title span{color:var(--gold)}
+
+.btn-primary{
+  background:var(--gold);color:var(--bg);border:none;
+  padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.82rem;
+  cursor:pointer;transition:all 0.2s;
+}
+.btn-primary:hover{background:var(--gold-light)}
+.btn-ghost{
+  background:transparent;border:1px solid var(--w08);color:var(--w50);
+  padding:9px 16px;border-radius:8px;font-size:0.78rem;cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-ghost:hover{border-color:var(--gold-border);color:var(--gold)}
+
+/* ===== FILTER PILLS ===== */
+.filter-row{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.filter-pill{
+  background:var(--bg-3);border:1px solid var(--w08);color:var(--w50);
+  padding:7px 14px;border-radius:20px;font-size:0.76rem;cursor:pointer;
+  transition:all 0.2s;
+}
+.filter-pill:hover{border-color:var(--gold-border)}
+.filter-pill.active{background:var(--gold-glow);border-color:var(--gold-border);color:var(--gold-light)}
+
+/* ===== TABLE ===== */
+.table-wrap{
+  background:var(--bg-2);border:1px solid var(--w08);border-radius:12px;
+  overflow-x:auto;
+}
+table{width:100%;border-collapse:collapse;min-width:760px}
+thead th{
+  text-align:left;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--w50);font-weight:600;padding:14px 16px;border-bottom:1px solid var(--w08);
+  white-space:nowrap;
+}
+tbody td{
+  padding:14px 16px;font-size:0.85rem;color:var(--w80);
+  border-bottom:1px solid var(--w08);vertical-align:middle;
+}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--bg-3)}
+.empty-row td{text-align:center;color:var(--w20);padding:48px 16px;font-size:0.85rem}
+
+.status-pill{
+  display:inline-block;padding:4px 10px;border-radius:6px;font-size:0.72rem;font-weight:600;
+}
+.status-New{background:rgba(107,184,255,0.12);color:var(--blue)}
+.status-Contacted{background:rgba(232,204,106,0.12);color:var(--gold-light)}
+.status-Converted{background:rgba(95,217,122,0.12);color:var(--green)}
+.status-Dead{background:rgba(255,107,107,0.12);color:var(--red)}
+
+select.status-select{
+  background:var(--bg-3);border:1px solid var(--w08);color:var(--white);
+  padding:6px 10px;border-radius:6px;font-size:0.78rem;cursor:pointer;
+}
+select.status-select:focus{outline:none;border-color:var(--gold-border)}
+
+.icon-btn{
+  background:transparent;border:1px solid var(--w08);width:32px;height:32px;
+  border-radius:7px;cursor:pointer;color:var(--w50);font-size:0.85rem;
+  display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s;
+}
+.icon-btn:hover{border-color:var(--gold-border);color:var(--gold)}
+.icon-btn.wa-icon:hover{border-color:#25D366;color:#25D366}
+.icon-btn.del-icon:hover{border-color:var(--red);color:var(--red)}
+.row-actions{display:flex;gap:6px}
+
+/* ===== PORTFOLIO / PACKAGE CARDS ===== */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.item-card{
+  background:var(--bg-2);border:1px solid var(--w08);border-radius:12px;
+  padding:18px;display:flex;flex-direction:column;gap:10px;
+}
+.item-card.hidden-item{opacity:0.45}
+.item-card img{width:100%;height:130px;object-fit:cover;border-radius:8px;background:var(--bg-3)}
+.item-name{font-size:0.95rem;font-weight:600;color:var(--white)}
+.item-desc{font-size:0.78rem;color:var(--w50);line-height:1.5;flex-grow:1}
+.item-meta{font-size:0.72rem;color:var(--gold-dim);text-transform:uppercase;letter-spacing:0.04em}
+.item-foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+
+.toggle-switch{position:relative;width:38px;height:20px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{
+  position:absolute;inset:0;background:var(--bg-4);border-radius:20px;cursor:pointer;
+  transition:background 0.2s;
+}
+.toggle-slider::before{
+  content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;
+  background:var(--w50);border-radius:50%;transition:transform 0.2s,background 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider{background:var(--gold-glow)}
+.toggle-switch input:checked + .toggle-slider::before{transform:translateX(18px);background:var(--gold)}
+
+.add-card{
+  border:1px dashed var(--w08);border-radius:12px;display:flex;align-items:center;
+  justify-content:center;min-height:200px;cursor:pointer;color:var(--w20);
+  font-size:0.85rem;transition:all 0.2s;
+}
+.add-card:hover{border-color:var(--gold-border);color:var(--gold)}
+
+/* ===== PACKAGE EDITOR ===== */
+.pkg-row{
+  background:var(--bg-2);border:1px solid var(--w08);border-radius:12px;
+  padding:20px;margin-bottom:14px;
+}
+.pkg-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.pkg-row-name{font-size:1.05rem;font-weight:600;color:var(--gold-light)}
+.feature-list{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.feature-item{display:flex;gap:8px;align-items:center}
+.feature-item input{flex-grow:1}
+
+/* ===== FORM ELEMENTS (shared) ===== */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:0.74rem;color:var(--w50);margin-bottom:6px;letter-spacing:0.03em}
+.field input,.field textarea,.field select{
+  width:100%;background:var(--bg-3);border:1px solid var(--w08);
+  border-radius:7px;padding:10px 13px;color:var(--white);font-size:0.85rem;
+  font-family:inherit;transition:border-color 0.2s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--gold-border)}
+.field textarea{resize:vertical;min-height:70px}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.78);
+  backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;
+  padding:24px;overflow-y:auto;
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  width:100%;max-width:480px;background:var(--bg-2);
+  border:1px solid var(--gold-border);border-radius:14px;padding:28px;
+  box-shadow:0 30px 90px rgba(0,0,0,0.5);
+  animation:mIn 0.25s var(--ease-out);
+}
+@keyframes mIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.modal-title{font-size:1.2rem;font-family:'Cormorant Garamond',serif;color:var(--white);margin-bottom:18px}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions button{flex:1}
+.btn-danger{background:var(--red);color:var(--bg)}
+.btn-danger:hover{background:#ff8585}
+
+.toast{
+  position:fixed;bottom:24px;right:24px;z-index:300;
+  background:var(--bg-3);border:1px solid var(--gold-border);
+  color:var(--white);padding:13px 20px;border-radius:9px;font-size:0.84rem;
+  box-shadow:0 14px 40px rgba(0,0,0,0.4);transform:translateY(20px);opacity:0;
+  transition:all 0.3s var(--ease-out);pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{border-color:rgba(255,107,107,0.4);color:var(--red)}
+
+.loading-row{text-align:center;padding:40px;color:var(--w20);font-size:0.85rem}
+
+@media(max-width:640px){
+  main{padding:18px 14px}
+  header.admin-head{padding:14px 16px}
+  .head-email{display:none}
+  .tabs{padding:0 14px}
+  table{min-width:640px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Tako<span> Designs</span></div>
+    <div class="login-sub">Admin Access</div>
+    <form id="login-form">
+      <input type="email" id="login-email" placeholder="Email" required autocomplete="username"/>
+      <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password"/>
+      <button type="submit" id="login-btn">Sign In</button>
+    </form>
+    <div class="login-msg" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- ===== APP SHELL ===== -->
+<div id="app-shell">
+  <header class="admin-head">
+    <div class="admin-logo">Tako<span> Admin</span></div>
+    <div class="head-right">
+      <span class="head-email" id="head-email"></span>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="leads">Leads</button>
+    <button class="tab-btn" data-tab="portfolio">Portfolio</button>
+    <button class="tab-btn" data-tab="packages">Packages</button>
+  </nav>
+
+  <main>
+    <!-- ===== SECTION 1: LEADS ===== -->
+    <section class="panel active" id="panel-leads">
+      <div class="panel-top">
+        <div class="panel-title">Lead <span>Management</span></div>
+        <button class="btn-ghost" id="leads-refresh">↻ Refresh</button>
+      </div>
+      <div class="filter-row" id="leads-filters">
+        <button class="filter-pill active" data-status="all">All</button>
+        <button class="filter-pill" data-status="New">New</button>
+        <button class="filter-pill" data-status="Contacted">Contacted</button>
+        <button class="filter-pill" data-status="Converted">Converted</button>
+        <button class="filter-pill" data-status="Dead">Dead</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th><th>Salon</th><th>Phone</th><th>City</th><th>Date</th><th>Status</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leads-tbody">
+            <tr><td colspan="7" class="loading-row">Loading leads…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 2: PORTFOLIO ===== -->
+    <section class="panel" id="panel-portfolio">
+      <div class="panel-top">
+        <div class="panel-title">Portfolio <span>Management</span></div>
+        <button class="btn-primary" id="portfolio-add-btn">+ Add Project</button>
+      </div>
+      <div class="card-grid" id="portfolio-grid">
+        <div class="loading-row">Loading portfolio…</div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 3: PACKAGES ===== -->
+    <section class="panel" id="panel-packages">
+      <div class="panel-top">
+        <div class="panel-title">Pricing & <span>Package Editor</span></div>
+        <button class="btn-primary" id="package-add-btn">+ Add Package</button>
+      </div>
+      <div id="packages-list">
+        <div class="loading-row">Loading packages…</div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===== DELETE CONFIRM MODAL ===== -->
+<div class="modal-overlay" id="confirm-overlay">
+  <div class="modal-box">
+    <div class="modal-title" id="confirm-title">Delete this item?</div>
+    <p style="font-size:0.84rem;color:var(--w50)" id="confirm-body">This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="confirm-cancel">Cancel</button>
+      <button class="btn-danger" id="confirm-ok" style="border:none;border-radius:8px;font-weight:600;cursor:pointer;padding:10px">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PORTFOLIO EDIT MODAL ===== -->
+<div class="modal-overlay" id="portfolio-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="portfolio-modal-title">Add Project</div>
+    <form id="portfolio-form">
+      <div class="field"><label>Project Name</label><input type="text" id="pf-name" required/></div>
+      <div class="field"><label>Description</label><textarea id="pf-desc"></textarea></div>
+      <div class="field"><label>Live URL</label><input type="url" id="pf-url" placeholder="https://..."/></div>
+      <div class="field"><label>Image URL</label><input type="url" id="pf-img" placeholder="https://..."/></div>
+      <div class="field"><label>Category</label><input type="text" id="pf-cat" placeholder="e.g. Unisex Salon"/></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="portfolio-cancel">Cancel</button>
+        <button type="submit" class="btn-primary" id="portfolio-save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== PACKAGE EDIT MODAL ===== -->
+<div class="modal-overlay" id="package-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="package-modal-title">Add Package</div>
+    <form id="package-form">
+      <div class="field"><label>Package Name</label><input type="text" id="pk-name" required/></div>
+      <div class="field"><label>Price</label><input type="text" id="pk-price" placeholder="e.g. ₹15,000" required/></div>
+      <div class="field">
+        <label>Features</label>
+        <div class="feature-list" id="pk-features-list"></div>
+        <button type="button" class="btn-ghost" id="pk-add-feature" style="margin-top:8px">+ Add Feature</button>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="package-cancel">Cancel</button>
+        <button type="submit" class="btn-primary" id="package-save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   SUPABASE CONFIG
+   ============================================================ */
+const SUPABASE_URL = 'https://nxafhvktzfrkgroxdbjw.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_XQylXlqmYVg-Qc1GJYMJug_9m5XaVRr';
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
+
+let currentSession = null;
+let leadsCache = [];
+let leadsFilter = 'all';
+let portfolioCache = [];
+let packagesCache = [];
+let editingPortfolioId = null;
+let editingPackageId = null;
+let pendingDelete = null; // { type, id }
+
+/* ---------------- UTIL ---------------- */
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function waLink(phone, name) {
+  const clean = String(phone).replace(/[^0-9]/g, '');
+  const text = encodeURIComponent(`Hi ${name}, this is Tako Designs following up on your website inquiry.`);
+  return `https://wa.me/${clean}?text=${text}`;
+}
+
+/* ---------------- AUTH ---------------- */
+async function checkSession() {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    currentSession = data.session;
+    showApp();
+  } else {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-shell').classList.remove('active');
+}
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-shell').classList.add('active');
+  document.getElementById('head-email').textContent = currentSession.user.email;
+  loadLeads();
+  loadPortfolio();
+  loadPackages();
+}
+
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const msg = document.getElementById('login-msg');
+  msg.textContent = '';
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = 'Sign In';
+  if (error) {
+    msg.textContent = 'Invalid email or password.';
+    return;
+  }
+  currentSession = data.session;
+  showApp();
+});
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await sb.auth.signOut();
+  currentSession = null;
+  showLogin();
+});
+
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT') {
+    currentSession = null;
+    showLogin();
+  }
+});
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============================================================
+   SECTION 1 — LEADS
+   ============================================================ */
+async function loadLeads() {
+  const tbody = document.getElementById('leads-tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Loading leads…</td></tr>';
+  const { data, error } = await sb.from('leads').select('*').order('created_at', { ascending: false });
+  if (error) {
+    tbody.innerHTML = `<tr><td colspan="7" class="loading-row">Error loading leads: ${esc(error.message)}</td></tr>`;
+    return;
+  }
+  leadsCache = data || [];
+  renderLeads();
+}
+
+function renderLeads() {
+  const tbody = document.getElementById('leads-tbody');
+  const rows = leadsFilter === 'all' ? leadsCache : leadsCache.filter(l => l.status === leadsFilter);
+  if (!rows.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No leads' + (leadsFilter !== 'all' ? ' with status "' + leadsFilter + '"' : ' yet') + '.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(l => `
+    <tr data-id="${l.id}">
+      <td>${esc(l.name)}</td>
+      <td>${esc(l.salon_name)}</td>
+      <td>${esc(l.phone)}</td>
+      <td>${esc(l.city) || '—'}</td>
+      <td>${fmtDate(l.created_at)}</td>
+      <td>
+        <select class="status-select" data-id="${l.id}">
+          ${['New','Contacted','Converted','Dead'].map(s => `<option value="${s}" ${s===l.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <div class="row-actions">
+          <a class="icon-btn wa-icon" href="${waLink(l.phone, l.name)}" target="_blank" title="WhatsApp">💬</a>
+          <button class="icon-btn del-icon" data-del-lead="${l.id}" title="Delete">✕</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('.status-select').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      const id = sel.dataset.id;
+      const newStatus = sel.value;
+      const { error } = await sb.from('leads').update({ status: newStatus }).eq('id', id);
+      if (error) { toast('Failed to update status', true); return; }
+      const lead = leadsCache.find(l => l.id === id);
+      if (lead) lead.status = newStatus;
+      toast('Status updated');
+    });
+  });
+
+  tbody.querySelectorAll('[data-del-lead]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.delLead;
+      const lead = leadsCache.find(l => l.id === id);
+      openConfirm('Delete this lead?', `${lead.name} (${lead.salon_name}) will be permanently removed.`, async () => {
+        const { error } = await sb.from('leads').delete().eq('id', id);
+        if (error) { toast('Delete failed', true); return; }
+        leadsCache = leadsCache.filter(l => l.id !== id);
+        renderLeads();
+        toast('Lead deleted');
+      });
+    });
+  });
+}
+
+document.getElementById('leads-refresh').addEventListener('click', loadLeads);
+document.querySelectorAll('#leads-filters .filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('#leads-filters .filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    leadsFilter = pill.dataset.status;
+    renderLeads();
+  });
+});
+
+/* ============================================================
+   SECTION 2 — PORTFOLIO
+   ============================================================ */
+async function loadPortfolio() {
+  const grid = document.getElementById('portfolio-grid');
+  grid.innerHTML = '<div class="loading-row">Loading portfolio…</div>';
+  const { data, error } = await sb.from('portfolio').select('*').order('sort_order', { ascending: true });
+  if (error) {
+    grid.innerHTML = `<div class="loading-row">Error: ${esc(error.message)}</div>`;
+    return;
+  }
+  portfolioCache = data || [];
+  renderPortfolio();
+}
+
+function renderPortfolio() {
+  const grid = document.getElementById('portfolio-grid');
+  const cards = portfolioCache.map(p => `
+    <div class="item-card ${p.visible ? '' : 'hidden-item'}" data-id="${p.id}">
+      ${p.image_url ? `<img src="${esc(p.image_url)}" alt="${esc(p.name)}" onerror="this.style.display='none'"/>` : ''}
+      <div class="item-name">${esc(p.name)}</div>
+      ${p.category ? `<div class="item-meta">${esc(p.category)}</div>` : ''}
+      <div class="item-desc">${esc(p.description) || ''}</div>
+      <div class="item-foot">
+        <div class="row-actions">
+          <button class="icon-btn" data-edit-pf="${p.id}" title="Edit">✎</button>
+          <button class="icon-btn del-icon" data-del-pf="${p.id}" title="Delete">✕</button>
+        </div>
+        <label class="toggle-switch" title="${p.visible ? 'Visible' : 'Hidden'}">
+          <input type="checkbox" data-vis-pf="${p.id}" ${p.visible ? 'checked' : ''}/>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  `).join('');
+  grid.innerHTML = cards + '<div class="add-card" id="portfolio-add-card">+ Add Project</div>';
+
+  grid.querySelectorAll('[data-vis-pf]').forEach(cb => {
+    cb.addEventListener('change', async () => {
+      const id = cb.dataset.visPf;
+      const { error } = await sb.from('portfolio').update({ visible: cb.checked }).eq('id', id);
+      if (error) { toast('Failed to toggle visibility', true); cb.checked = !cb.checked; return; }
+      const item = portfolioCache.find(p => p.id === id);
+      if (item) item.visible = cb.checked;
+      renderPortfolio();
+      toast(cb.checked ? 'Project visible on site' : 'Project hidden from site');
+    });
+  });
+  grid.querySelectorAll('[data-edit-pf]').forEach(btn => {
+    btn.addEventListener('click', () => openPortfolioModal(btn.dataset.editPf));
+  });
+  grid.querySelectorAll('[data-del-pf]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.delPf;
+      const item = portfolioCache.find(p => p.id === id);
+      openConfirm('Delete this project?', `"${item.name}" will be permanently removed from the portfolio table.`, async () => {
+        const { error } = await sb.from('portfolio').delete().eq('id', id);
+        if (error) { toast('Delete failed', true); return; }
+        portfolioCache = portfolioCache.filter(p => p.id !== id);
+        renderPortfolio();
+        toast('Project deleted');
+      });
+    });
+  });
+  document.getElementById('portfolio-add-card').addEventListener('click', () => openPortfolioModal(null));
+}
+
+function openPortfolioModal(id) {
+  editingPortfolioId = id;
+  const modal = document.getElementById('portfolio-modal');
+  const title = document.getElementById('portfolio-modal-title');
+  if (id) {
+    const item = portfolioCache.find(p => p.id === id);
+    title.textContent = 'Edit Project';
+    document.getElementById('pf-name').value = item.name || '';
+    document.getElementById('pf-desc').value = item.description || '';
+    document.getElementById('pf-url').value = item.live_url || '';
+    document.getElementById('pf-img').value = item.image_url || '';
+    document.getElementById('pf-cat').value = item.category || '';
+  } else {
+    title.textContent = 'Add Project';
+    document.getElementById('portfolio-form').reset();
+  }
+  modal.classList.add('open');
+}
+document.getElementById('portfolio-add-btn').addEventListener('click', () => openPortfolioModal(null));
+document.getElementById('portfolio-cancel').addEventListener('click', () => document.getElementById('portfolio-modal').classList.remove('open'));
+
+document.getElementById('portfolio-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById('pf-name').value.trim(),
+    description: document.getElementById('pf-desc').value.trim() || null,
+    live_url: document.getElementById('pf-url').value.trim() || null,
+    image_url: document.getElementById('pf-img').value.trim() || null,
+    category: document.getElementById('pf-cat').value.trim() || null,
+  };
+  const saveBtn = document.getElementById('portfolio-save');
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+  let error;
+  if (editingPortfolioId) {
+    ({ error } = await sb.from('portfolio').update(payload).eq('id', editingPortfolioId));
+  } else {
+    payload.sort_order = portfolioCache.length;
+    ({ error } = await sb.from('portfolio').insert(payload));
+  }
+  saveBtn.disabled = false; saveBtn.textContent = 'Save';
+  if (error) { toast('Save failed: ' + error.message, true); return; }
+  document.getElementById('portfolio-modal').classList.remove('open');
+  toast('Project saved');
+  loadPortfolio();
+});
+
+/* ============================================================
+   SECTION 3 — PACKAGES
+   ============================================================ */
+async function loadPackages() {
+  const list = document.getElementById('packages-list');
+  list.innerHTML = '<div class="loading-row">Loading packages…</div>';
+  const { data, error } = await sb.from('packages').select('*').order('sort_order', { ascending: true });
+  if (error) {
+    list.innerHTML = `<div class="loading-row">Error: ${esc(error.message)}</div>`;
+    return;
+  }
+  packagesCache = data || [];
+  renderPackages();
+}
+
+function renderPackages() {
+  const list = document.getElementById('packages-list');
+  if (!packagesCache.length) {
+    list.innerHTML = '<div class="loading-row">No packages yet. Add one to get started.</div>';
+    return;
+  }
+  list.innerHTML = packagesCache.map(p => `
+    <div class="pkg-row" data-id="${p.id}">
+      <div class="pkg-row-top">
+        <div>
+          <div class="pkg-row-name">${esc(p.name)}</div>
+          <div style="font-size:0.85rem;color:var(--w50);margin-top:2px">${esc(p.price)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <label class="toggle-switch" title="${p.visible ? 'Visible' : 'Hidden'}">
+            <input type="checkbox" data-vis-pk="${p.id}" ${p.visible ? 'checked' : ''}/>
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="row-actions">
+            <button class="icon-btn" data-edit-pk="${p.id}" title="Edit">✎</button>
+            <button class="icon-btn del-icon" data-del-pk="${p.id}" title="Delete">✕</button>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:0.8rem;color:var(--w80);display:flex;flex-wrap:wrap;gap:8px">
+        ${(p.features || []).map(f => `<span style="background:var(--bg-3);padding:4px 10px;border-radius:6px">${esc(f)}</span>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('[data-vis-pk]').forEach(cb => {
+    cb.addEventListener('change', async () => {
+      const id = cb.dataset.visPk;
+      const { error } = await sb.from('packages').update({ visible: cb.checked }).eq('id', id);
+      if (error) { toast('Failed to toggle visibility', true); cb.checked = !cb.checked; return; }
+      const item = packagesCache.find(p => p.id === id);
+      if (item) item.visible = cb.checked;
+      toast(cb.checked ? 'Package visible on site' : 'Package hidden from site');
+    });
+  });
+  list.querySelectorAll('[data-edit-pk]').forEach(btn => {
+    btn.addEventListener('click', () => openPackageModal(btn.dataset.editPk));
+  });
+  list.querySelectorAll('[data-del-pk]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.delPk;
+      const item = packagesCache.find(p => p.id === id);
+      openConfirm('Delete this package?', `"${item.name}" will be permanently removed.`, async () => {
+        const { error } = await sb.from('packages').delete().eq('id', id);
+        if (error) { toast('Delete failed', true); return; }
+        packagesCache = packagesCache.filter(p => p.id !== id);
+        renderPackages();
+        toast('Package deleted');
+      });
+    });
+  });
+}
+
+function renderFeatureInputs(features) {
+  const wrap = document.getElementById('pk-features-list');
+  wrap.innerHTML = '';
+  (features.length ? features : ['']).forEach(f => addFeatureRow(f));
+}
+function addFeatureRow(value) {
+  const wrap = document.getElementById('pk-features-list');
+  const row = document.createElement('div');
+  row.className = 'feature-item';
+  row.innerHTML = `<input type="text" value="${esc(value || '')}" placeholder="Feature"/><button type="button" class="icon-btn del-icon" title="Remove">✕</button>`;
+  row.querySelector('button').addEventListener('click', () => {
+    if (wrap.children.length > 1) row.remove();
+    else row.querySelector('input').value = '';
+  });
+  wrap.appendChild(row);
+}
+document.getElementById('pk-add-feature').addEventListener('click', () => addFeatureRow(''));
+
+function openPackageModal(id) {
+  editingPackageId = id;
+  const modal = document.getElementById('package-modal');
+  const title = document.getElementById('package-modal-title');
+  if (id) {
+    const item = packagesCache.find(p => p.id === id);
+    title.textContent = 'Edit Package';
+    document.getElementById('pk-name').value = item.name || '';
+    document.getElementById('pk-price').value = item.price || '';
+    renderFeatureInputs(item.features || []);
+  } else {
+    title.textContent = 'Add Package';
+    document.getElementById('pk-name').value = '';
+    document.getElementById('pk-price').value = '';
+    renderFeatureInputs([]);
+  }
+  modal.classList.add('open');
+}
+document.getElementById('package-add-btn').addEventListener('click', () => openPackageModal(null));
+document.getElementById('package-cancel').addEventListener('click', () => document.getElementById('package-modal').classList.remove('open'));
+
+document.getElementById('package-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const features = Array.from(document.querySelectorAll('#pk-features-list input'))
+    .map(i => i.value.trim()).filter(Boolean);
+  const payload = {
+    name: document.getElementById('pk-name').value.trim(),
+    price: document.getElementById('pk-price').value.trim(),
+    features,
+  };
+  const saveBtn = document.getElementById('package-save');
+  saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+  let error;
+  if (editingPackageId) {
+    ({ error } = await sb.from('packages').update(payload).eq('id', editingPackageId));
+  } else {
+    payload.sort_order = packagesCache.length;
+    ({ error } = await sb.from('packages').insert(payload));
+  }
+  saveBtn.disabled = false; saveBtn.textContent = 'Save';
+  if (error) { toast('Save failed: ' + error.message, true); return; }
+  document.getElementById('package-modal').classList.remove('open');
+  toast('Package saved');
+  loadPackages();
+});
+
+/* ============================================================
+   SHARED — CONFIRM MODAL
+   ============================================================ */
+function openConfirm(title, body, onConfirm) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-body').textContent = body;
+  pendingDelete = onConfirm;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  pendingDelete = null;
+});
+document.getElementById('confirm-ok').addEventListener('click', async () => {
+  if (pendingDelete) await pendingDelete();
+  document.getElementById('confirm-overlay').classList.remove('open');
+  pendingDelete = null;
+});
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', (e) => { if (e.target === ov) ov.classList.remove('open'); });
+});
+
+/* ---------------- BOOT ---------------- */
+checkSession();
+</script>
+</body>
+</html>
